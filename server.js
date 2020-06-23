@@ -1,22 +1,31 @@
 const express = require("express");
-const connectDB = require('./config/db');
+const connectDB = require("./config/db");
+const morgan = require("morgan");
+const app = express();
+const userRoutes = require("./routes/api/user.js");
+const authRoutes = require("./routes/api/auth.js");
+const profileRoutes = require("./routes/api/profile.js");
+const postRoutes = require("./routes/api/post.js");
 
-const userRoutes = require('./routes/api/user.js');
-const authRoutes = require('./routes/api/auth.js');
-const profileRoutes = require('./routes/api/profile.js');
-const postRoutes = require('./routes/api/post.js');
 //connecting to MongoDB
 connectDB();
 
-const app = express();
+//Init middleware
+app.use(
+  express.json({
+    extended: false,
+  })
+);
+app.use(morgan("combined"));
 
-app.use(express.json());
-
+app.get("/", (req, res, next) => {
+  res.json("API running");
+});
 // Routes
-app.use('/user/', userRoutes);
-app.use('/auth/', authRoutes);
-app.use('/profile/', profileRoutes);
-app.use('/post/', postRoutes);
+app.use("/api/user/", userRoutes);
+app.use("/api/auth/", authRoutes);
+app.use("/api/profile/", profileRoutes);
+app.use("/api/post/", postRoutes);
 
 const port = process.env.PORT || 5000;
 

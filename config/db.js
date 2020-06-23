@@ -5,6 +5,7 @@ const db = config.get('mongoURI');
 const options = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true
 }
 
 const connectDB = async () => {
