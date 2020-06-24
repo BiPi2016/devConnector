@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const User = require("../../models/User.model");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const config = require('config');
 const gravatar = require("gravatar");
 const {
     check,
@@ -11,7 +13,7 @@ const {
 //@desc Test route
 //@access Public
 router.get("/", (req, res, next) => {
-    res.send("user routes");
+    return res.send("user routes");
 });
 
 //@route POST api/user
@@ -57,7 +59,7 @@ router.post(
                 email: email,
             });
             if (user) {
-                return res.status(404).json({
+                return res.status(400).json({
                     errors: [{
                         msg: "User already exists",
                     }, ],
@@ -83,11 +85,27 @@ router.post(
             user.password = await bcrypt.hash(password, salt);
 
             await user.save();
-            res.send("User registered");
+            const payload = {
+                user: {
+                    id: user.id
+                }
+            }
+
             //Return jsonwebtoken
+            jwt.sign(
+                payload,
+                config.get('jwtSecret'), {
+                    expiresIn: 36000
+                },
+                (err, token) => {
+                    if (err) throw err;
+                    return res.json({
+                        token
+                    });
+                })
         } catch (error) {
             console.log(error);
-            res.status(500).send("Server error");
+            return res.status(500).send("Server error");
         }
     }
 );
