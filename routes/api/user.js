@@ -12,8 +12,14 @@ const {
 //@route GET api/user
 //@desc Test route
 //@access Public
-router.get("/", (req, res, next) => {
-    return res.send("user routes");
+router.get("/", async (req, res, next) => {
+    try {
+        const users = await User.find({}).select('-password');
+        res.json(users);
+    } catch (error) {
+        next(error);
+        res.status(500).json('Server error');
+    }
 });
 
 //@route POST api/user
