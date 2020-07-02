@@ -70,14 +70,13 @@ router.post('/signin', [
                 });
             }
 
-            //Match, continue
+            //Matched, continue
             const payload = {
                 user: {
                     id: user._id
                 },
             };
 
-            console.log(payload);
             jwt.sign(payload, config.get('jwtSecret'), {
                 expiresIn: 3600,
             }, (err, token) => {
@@ -85,7 +84,6 @@ router.post('/signin', [
                     console.log(err);
                     throw err;
                 }
-                console.log(token);
                 return res.status(200).json({
                     token
                 });
