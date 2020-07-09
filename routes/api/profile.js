@@ -86,7 +86,7 @@ router.post('/', [
             if (status) profileFields.status = status;
             if (bio) profileFields.bio = bio;
             if (githubusername) profileFields.githubusername = githubusername;
-            if (skills) profileFields.skills = skills.split(',').map(skill => skill.trim());
+            if (skills) profileFields.skills = skills.split(',').map(skill => skill.trim()).filter(skill => skill);
 
             //Populate social object
             if (youtube) profileFields.social.youtube = youtube;
@@ -119,12 +119,76 @@ router.post('/', [
             await profile.save();
             return res.json(profile);
         } catch (error) {
-            next(error);
-            /* 
-                        console.log(err.message);
-                        res.staus(500).json({errors: [{msg: 'Server error'}]}); */
+            //next(error);
+            console.log(error.message);
+            return res.status(400).json({
+                errors: [{
+                    msg: 'Server error'
+                }]
+            })
         }
     }
 ]);
+
+//@route GET api/profile/
+//@desc Fetchs all profiles
+//@access Public
+router.get('/', async (req, res, next) => {
+    try {
+        let profiles = await Profile.find({})
+            .populate({
+                path: 'user',
+                select: 'name avatar'
+            });
+        return res.json(profiles);
+    } catch (error) {
+        //next(error);
+        console.log(error.message);
+        return res.status(400).json({
+            errors: [{
+                msg: 'Server error'
+            }]
+        })
+    }
+});
+
+//@route GET api/profile/user/:userID
+//@desc Fetchs a specific profile
+//@access Public
+router.get('/user/:userID', async (req, res, next) => {
+    const userID = req.params.userID;
+    try {
+        const profile = await Profile.findOne({
+                user: userID
+            })
+            .populate({
+                path: 'user',
+                select: 'name avatar'
+            });
+        if (!profile) {
+            return res.status(400).json({
+                errors: [{
+                    msg: 'There is no profile for this user'
+                }]
+            });
+        }
+        return res.json(profile);
+    } catch (error) {
+        //next(error);
+        console.log(error.message);
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({
+                errors: [{
+                    msg: 'There is no profile for this user'
+                }]
+            });
+        }
+        return res.status(400).json({
+            errors: [{
+                msg: 'Server error'
+            }]
+        })
+    }
+});
 
 module.exports = router;
