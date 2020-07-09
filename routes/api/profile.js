@@ -191,4 +191,46 @@ router.get('/user/:userID', async (req, res, next) => {
     }
 });
 
+//@route DELETE api/profile/
+//@desc Deletes one profile, user and posts
+//@access Private
+router.delete('/', auth, async (req, res, next) => {
+    try {
+        //Remove posts by this user
+
+        //Remove profile
+        const deltedProfile = await Profile.findOneAndRemove({
+            user: req.user.id
+        });
+        if (!deltedProfile) {
+            return res.status(400).json({
+                errors: [{
+                    msg: 'No matching profile found, it may already have been deleted'
+                }]
+            });
+        }
+        //Remove the user
+        const deletedUser = await User.findByIdAndDelete(req.user.id);
+        if (!deletedUser) {
+            return res.status(400).json({
+                errors: [{
+                    msg: 'No matching user found/User may already have  been deleted'
+                }]
+            });
+        }
+
+        return res.json({
+            msg: 'User deleted'
+        });
+
+    } catch (error) {
+        //next(error);
+        console.log(error.message);
+        res.status(500).json({
+            errors: [{
+                msg: 'Server error'
+            }]
+        });
+    }
+});
 module.exports = router;
